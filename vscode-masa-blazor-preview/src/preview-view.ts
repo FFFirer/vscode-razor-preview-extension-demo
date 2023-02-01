@@ -129,13 +129,15 @@ export class RazorPreviewView {
                 .hide {
                     display: none;
                 }
+
+                body { background-color: white; }
             </style>
         </head>
         
         <body>
         
             <div id="app">
-                <h1>Hello World</h1>
+                <iframe style="width: 100%; height: 100vh;" src="http://localhost:5107/"></iframe>
             </div>
                     
         </body>
