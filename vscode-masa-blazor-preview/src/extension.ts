@@ -44,12 +44,21 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}
 
+	function openPreviewFragment(fragment?: string) {
+		
+	}
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand(
 		'vscode-masa-blazor-preview.renderDocument',
 		openPreview
+	);
+
+	let command = vscode.commands.registerCommand(
+		"vscode-masa-blazor-preview.renderFragment",
+		openPreviewFragment
 	);
 
 	context.subscriptions.push(disposable);

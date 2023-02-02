@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import { ApiService } from "./service";
 
 export class RazorPreviewView {
     public constructor(private context: vscode.ExtensionContext) { }
 
     private singlePreviewPanel: vscode.WebviewPanel | null = null;
     private singlePreviewPanelSourceTargetUri: vscode.Uri | null = null;
+
+    private apiService?: ApiService;
 
     private panel2EditorMap: Map<vscode.WebviewPanel, vscode.TextEditor> = new Map();
 
@@ -60,6 +63,15 @@ export class RazorPreviewView {
     ) {
         let previewPanel: vscode.WebviewPanel;
 
+        const baseUrl = "http://localhost:5000/";
+
+        if (!this.apiService) {
+
+            this.apiService = new ApiService({
+                baseUrl: baseUrl
+            }, { handle() { } });
+        }
+
         // const oldResourceRoot =
         //     this.getProjectDirectoryPath(
         //         this.singlePreviewPanelSourceTargetUri!,
@@ -94,7 +106,6 @@ export class RazorPreviewView {
                 }
             );
 
-
             previewPanel.webview.onDidReceiveMessage(
                 (message) => { },
                 null,
@@ -106,43 +117,48 @@ export class RazorPreviewView {
                 this.singlePreviewPanel = null;
                 this.singlePreviewPanelSourceTargetUri = null;
 
-             }, null, this.context.subscriptions);
+            }, null, this.context.subscriptions);
 
             this.singlePreviewPanel = previewPanel;
             this.panel2EditorMap.set(previewPanel, ediitor);
+
+            this.singlePreviewPanel.webview.html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                
+                <head>
+                    <meta charset="utf-8" />
+                    <title>DynamicRazorRender.WebAssembly</title>
+                    <base href="/" />
+                            
+                    <style>
+                        .hide {
+                            display: none;
+                        }
+
+                        body { background-color: white; }
+                    </style>
+                </head>
+                
+                <body>
+                
+                    <div id="app">
+                        <iframe style="width: 100%; height: 100vh;" src="${baseUrl}"></iframe>
+                    </div>
+                            
+                </body>
+                
+                </html>
+                `;
         }
         else {
             this.singlePreviewPanel.reveal(viewOptions.viewColumn, true);
         }
 
-        this.singlePreviewPanel.title =`预览 ${path.basename(sourceUri.fsPath)}`;
+        this.singlePreviewPanel.title = `预览 ${path.basename(sourceUri.fsPath)}`;
 
-        this.singlePreviewPanel.webview.html = `<!DOCTYPE html>
-        <html lang="en">
-        
-        <head>
-            <meta charset="utf-8" />
-            <title>DynamicRazorRender.WebAssembly</title>
-            <base href="/" />
-                    
-            <style>
-                .hide {
-                    display: none;
-                }
-
-                body { background-color: white; }
-            </style>
-        </head>
-        
-        <body>
-        
-            <div id="app">
-                <iframe style="width: 100%; height: 100vh;" src="http://localhost:5107/"></iframe>
-            </div>
-                    
-        </body>
-        
-        </html>
-        `;
+        this.apiService?.renderFileAsync({
+            filePath: sourceUri.fsPath
+        });
     }
 }
