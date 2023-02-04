@@ -9,6 +9,9 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://gitee.com/fffirer/vscode-masa-blazor-preview"
+  },
   "activationEvents": [
     "onCommand:vscode-masa-blazor-preview.renderDocument"
   ],
