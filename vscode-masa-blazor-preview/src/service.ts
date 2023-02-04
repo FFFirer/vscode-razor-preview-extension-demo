@@ -14,7 +14,7 @@ export class RenderFileRequest {
 }
 
 export class RenderPlainRequest {
-    content?: string;
+    plainText?: string;
 }
 
 export interface IErrorHanlder {
@@ -23,6 +23,8 @@ export interface IErrorHanlder {
 
 export class ApiService {
     constructor(option: ApiConfigOption, errorHandler?: IErrorHanlder) {
+        this.option = option;
+
         this.instance = axios.create({
             baseURL: option.baseUrl!
         });
@@ -50,13 +52,17 @@ export class ApiService {
 
     private instance: AxiosInstance;
     private errorHandler?: IErrorHanlder;
+    public option: ApiConfigOption;
 
     private handleResponse(response: Promise<AxiosResponse<any, any>>): Promise<any> {
        
         return new Promise((resolve, reject) => {
             response
                 .then(resp => resolve(resp.data))
-                .catch(error => reject(error));
+                .catch(error => {
+                    console.log(error); 
+                    reject(error);
+                });
         });
     }
 
