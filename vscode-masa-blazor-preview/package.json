@@ -13,7 +13,8 @@
     "url": "https://gitee.com/fffirer/vscode-masa-blazor-preview"
   },
   "activationEvents": [
-    "onCommand:vscode-masa-blazor-preview.renderDocument"
+    "onCommand:vscode-masa-blazor-preview.renderDocument",
+    "onCommand:vscode-masa-blazor-preview.renderFragment"
   ],
   "main": "./out/extension.js",
   "contributes": {
