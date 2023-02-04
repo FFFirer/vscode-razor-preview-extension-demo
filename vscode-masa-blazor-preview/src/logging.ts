@@ -38,7 +38,7 @@ export class Logger implements ILogger {
     private logFilePath?: string;
 
     constructor() {
-        this.logChannel = vscode.window.createOutputChannel("Preview Razor Logs");
+        this.logChannel = vscode.window.createOutputChannel("Preview Razor Log");
 
         this.logBasePath = path.resolve(__dirname, "../logs");
         utils.ensurePathExists(this.logBasePath);

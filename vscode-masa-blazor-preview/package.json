@@ -17,11 +17,11 @@
     "commands": [
       {
         "command": "vscode-masa-blazor-preview.renderDocument",
-        "title": "Preview Razor File"
+        "title": "预览Razor文件"
       },
       {
         "command": "vscode-masa-blazor-preview.renderFragment",
-        "title": "Preview Selection Razor"
+        "title": "预览Razor片段"
       }
     ],
     "menus": {

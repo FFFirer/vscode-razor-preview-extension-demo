@@ -21,6 +21,7 @@ export interface IErrorHanlder {
     handle(error: any): void;
 }
 
+
 export class ApiService {
     constructor(option: ApiConfigOption, errorHandler?: IErrorHanlder) {
         this.option = option;
@@ -69,21 +70,7 @@ export class ApiService {
     public async renderAsync(requset: RenderRequest): Promise<any> {
         const url = "/api/event/render";
 
-        return await this.instance.post(url, requset)
-            .then(
-                (resp) => {
-                    if (resp.status != 200) {
-                        Promise.reject({
-                            message: "request failed",
-                            data: resp.data
-                        });
-                    }
-                }
-            ).catch(
-                (reason) => {
-                    this.errorHandler?.handle(reason)
-                }
-            );
+        return this.handleResponse(this.instance.post(url, requset));
     }
 
     public renderFileAsync(request: RenderFileRequest): Promise<any> {
@@ -96,5 +83,11 @@ export class ApiService {
         const url = "/api/event/renderPlain";
 
         return this.handleResponse(this.instance.post(url, request));
+    }
+
+    public healthCheckAsync() : Promise<void> {
+        const url = "/api/health/check";
+
+        return this.handleResponse(this.instance.get(url));
     }
 }

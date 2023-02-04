@@ -5,9 +5,12 @@ import { ILogger, Logger } from './logging';
 import { RazorPreviewView } from './preview-view';
 import { ApiService } from './service';
 import { SessionManager } from './session';
+import { SessionManagerV2 } from './session-v2';
+import { defaultSetting } from './setting';
 
 let logger: ILogger;
 let sessionManager: SessionManager;
+let sessionManagerV2: SessionManagerV2;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,15 +22,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 	logger = new Logger();
 
-	sessionManager = new SessionManager(context, logger);
-
-	sessionManager.start();
-
 	const externalApi = new ApiService({
-		baseUrl: "http://localhost:5000/"
+		baseUrl: defaultSetting.startupUrl
 	})
 
-	const view = new RazorPreviewView(context, externalApi, sessionManager);
+	// sessionManager = new SessionManager(context, logger);
+	sessionManagerV2 = new SessionManagerV2(context, logger, externalApi)
+
+	const view = new RazorPreviewView(context, externalApi, sessionManagerV2, logger);
+	
+	sessionManagerV2.start();
 
 	function openPreview(uri?: vscode.Uri) {
 		let resource = uri;
@@ -35,15 +39,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if (!(resource instanceof vscode.Uri)) {
 			if (vscode.window.activeTextEditor) {
-				// we are relaxed and don't check for markdown files
 				resource = vscode.window.activeTextEditor.document.uri;
 			}
 		}
 
-		view.init(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: viewColumn,
-			preserveFocus: true,
-		});
+		view.init(
+			resource!, 
+			vscode.window.activeTextEditor!, 
+			{
+				viewColumn: viewColumn,
+				preserveFocus: true,
+			}
+		);
 	}
 
 	function openPreviewFragment(uri?: vscode.Uri) {
@@ -56,10 +63,14 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		view.initSelection(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: viewColumn,
-			preserveFocus: true
-		})
+		view.initSelection(
+			resource!, 
+			vscode.window.activeTextEditor!, 
+			{
+				viewColumn: viewColumn,
+				preserveFocus: true
+			}
+		);
 	}
 
 	// The command has been defined in the package.json file
