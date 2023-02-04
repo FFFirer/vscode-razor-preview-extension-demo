@@ -18,34 +18,21 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "vscode-masa-blazor-preview" is now active!');
 
 	logger = new Logger();
+
 	sessionManager = new SessionManager(context, logger);
 
 	sessionManager.start();
 
-	const view = new RazorPreviewView(context, new ApiService({
+	const externalApi = new ApiService({
 		baseUrl: "http://localhost:5000/"
-	}));
+	})
 
-
-	/**
-	 * open
-	 */
-	function openPreviewToTheSide(uri?: vscode.Uri) {
-		let resource = uri;
-		if (!(resource instanceof vscode.Uri)) {
-			if (vscode.window.activeTextEditor) {
-				// we are relaxed and don't check for markdown files
-				resource = vscode.window.activeTextEditor.document.uri;
-			}
-		}
-		view.init(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: vscode.ViewColumn.One,
-			preserveFocus: true,
-		});
-	}
+	const view = new RazorPreviewView(context, externalApi, sessionManager);
 
 	function openPreview(uri?: vscode.Uri) {
 		let resource = uri;
+		let viewColumn = vscode.ViewColumn.Two;
+
 		if (!(resource instanceof vscode.Uri)) {
 			if (vscode.window.activeTextEditor) {
 				// we are relaxed and don't check for markdown files
@@ -54,13 +41,14 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		view.init(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: vscode.ViewColumn.Two,
+			viewColumn: viewColumn,
 			preserveFocus: true,
 		});
 	}
 
 	function openPreviewFragment(uri?: vscode.Uri) {
 		let resource = uri;
+		let viewColumn = vscode.ViewColumn.Two;
 
 		if (!(resource instanceof vscode.Uri)) {
 			if (vscode.window.activeTextEditor) {
@@ -69,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		view.initSelection(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: vscode.ViewColumn.Two,
+			viewColumn: viewColumn,
 			preserveFocus: true
 		})
 	}

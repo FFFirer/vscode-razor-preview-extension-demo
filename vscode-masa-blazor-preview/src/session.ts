@@ -47,14 +47,17 @@ export class SessionManager {
             .then(
                 () => {
                     this.log.write(" Started Razor Preview Service")
+                    this.sessionStatus = SessionStatus.Running;
                 },
                 (error) => {
                     this.log.writeError(" Razor Preview Service Got Error : ");
                     console.log("Error", error);
+                    this.sessionStatus = SessionStatus.Failed;
                 }
             )
             .catch((error) => {
                 console.log("Error2", error);
+                this.sessionStatus = SessionStatus.Failed;
             })
     }
 
@@ -88,5 +91,11 @@ export class SessionManager {
     public restartSession() {
         this.stop();
         this.start();
+    }
+
+    public checkRunning() {
+        if (this.sessionStatus != SessionStatus.Running) {
+            this.start();
+        }
     }
 }

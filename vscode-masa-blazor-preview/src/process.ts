@@ -76,6 +76,10 @@ export class PreviewRazorServiceProcess {
             this.consoleTerminal.dispose();
             this.consoleTerminal = undefined;
         }
+
+        if(this.onExitedEmitter){
+            this.onExitedEmitter.dispose()
+        }
     }
 
 
@@ -84,5 +88,7 @@ export class PreviewRazorServiceProcess {
         if (terminal != this.consoleTerminal) {
             return;
         }
+
+        this.onExitedEmitter.fire();
     }
 }

@@ -2,19 +2,25 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { ApiService } from "./service";
+import { SessionManager } from "./session";
 
 export class RazorPreviewView {
-    public constructor(private context: vscode.ExtensionContext, private api: ApiService) {
-        this.apiService = api
+    public constructor(private context: vscode.ExtensionContext, private externalApi: ApiService, private session : SessionManager) {
+        
+        const indexTemplatePath = path.resolve(__dirname, "../modules/webview/index.html");
+
+        this.indexHtmlTemplate = fs.readFileSync(indexTemplatePath, 'utf-8')
+
     }
 
     private singlePreviewPanel: vscode.WebviewPanel | null = null;
     private singlePreviewPanelSourceTargetUri: vscode.Uri | null = null;
 
-    private apiService: ApiService;
-
     private panel2EditorMap: Map<vscode.WebviewPanel, vscode.TextEditor> = new Map();
 
+    private indexHtmlTemplate: string;
+
+    /**格式化路径 */
     private formatPathIfNecessary(pathString: string) {
         if (process.platform === "win32") {
             pathString = pathString.replace(
@@ -25,6 +31,7 @@ export class RazorPreviewView {
         return pathString;
     }
 
+    /**获取打开的项目的目录 */
     private getProjectDirectoryPath(
         sourceUri: vscode.Uri,
         workspaceFolders: readonly vscode.WorkspaceFolder[] = []
@@ -54,15 +61,18 @@ export class RazorPreviewView {
         return this.formatPathIfNecessary(projectDirectoryPath);
     }
 
+    /**获取指定文件的路径 */
     public getFilePath(sourceUri: vscode.Uri) {
         return this.formatPathIfNecessary(sourceUri.fsPath);
     }
 
+    /**初始化webview */
     private initWebviewPanel(
         sourceUri: vscode.Uri,
         ediitor: vscode.TextEditor,
         viewOptions: { viewColumn: vscode.ViewColumn, preserveFocus?: boolean }
     ) {
+        
         return new Promise((resolve, reject) => {
             if (!this.singlePreviewPanel) {
                 let previewPanel: vscode.WebviewPanel;
@@ -101,34 +111,12 @@ export class RazorPreviewView {
 
                 }, null, this.context.subscriptions);
 
-                previewPanel.webview.html = `
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    
-                    <head>
-                        <meta charset="utf-8" />
-                        <title>DynamicRazorRender.WebAssembly</title>
-                        <base href="/" />
-                                
-                        <style>
-                            .hide {
-                                display: none;
-                            }
-    
-                            body { background-color: white; }
-                        </style>
-                    </head>
-                    
-                    <body>
-                    
-                        <div id="app">
-                            <iframe style="width: 100%; height: 100vh;" src="${this.apiService.option.baseUrl || ""}"></iframe>
-                        </div>
-                                
-                    </body>
-                    
-                    </html>
-                `;
+
+                const _this = this;
+
+
+                previewPanel.webview.html = this.indexHtmlTemplate
+                                                        .replace("@@baseUrl", this.externalApi.option.baseUrl!);
 
                 this.singlePreviewPanel = previewPanel;
                 this.panel2EditorMap.set(previewPanel, ediitor);
@@ -152,17 +140,19 @@ export class RazorPreviewView {
         ediitor: vscode.TextEditor,
         viewOptions: { viewColumn: vscode.ViewColumn; preserveFocus?: boolean }
     ) {
+        this.checkSession();
+        
         this.initWebviewPanel(sourceUri, ediitor, viewOptions).then((first) => {
             if (first) {
                 // 
                 setTimeout(() => {
-                    this.apiService?.renderFileAsync({
+                    this.externalApi?.renderFileAsync({
                         filePath: sourceUri.fsPath
                     });
                 }, 500);
             }
 
-            this.apiService?.renderFileAsync({
+            this.externalApi?.renderFileAsync({
                 filePath: sourceUri.fsPath
             });
         });
@@ -171,6 +161,9 @@ export class RazorPreviewView {
 
     }
 
+    protected checkSession(){
+        this.session.checkRunning();
+    }
 
     public initSelection(
         sourceUri: vscode.Uri,
@@ -178,6 +171,7 @@ export class RazorPreviewView {
         viewOptions: { viewColumn: vscode.ViewColumn; preserveFocus?: boolean }
     ) {
 
+        this.checkSession();
         // this.singlePreviewPanel!.title = `预览 ${path.basename(sourceUri.fsPath)}`;
 
         // let activeEditor = vscode.window.activeTextEditor;
@@ -190,12 +184,12 @@ export class RazorPreviewView {
             this.initWebviewPanel(sourceUri, ediitor, viewOptions).then((first) => {
                 if (first) {
                     setTimeout(() => {
-                        this.apiService?.renderPlainAsync({
+                        this.externalApi?.renderPlainAsync({
                             plainText: text
                         })
                     }, 500);
                 } else {
-                    this.apiService?.renderPlainAsync({
+                    this.externalApi?.renderPlainAsync({
                         plainText: text
                     });
                 }
