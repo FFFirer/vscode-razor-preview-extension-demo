@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "Client",
+			"path": "./vscode-masa-blazor-preview"
+		},
+		{
+			"name": "Server",
+			"path": "../DynamicRenderRazorDemoInJs/src"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off"
+	}
+}

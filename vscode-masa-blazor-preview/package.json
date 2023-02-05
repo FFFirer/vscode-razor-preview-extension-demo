@@ -2,22 +2,30 @@
   "name": "vscode-masa-blazor-preview",
   "displayName": "vscode-masa-blazor-preview",
   "description": "preivew masa blazor component",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://gitee.com/fffirer/vscode-masa-blazor-preview"
+  },
   "activationEvents": [
-    "onCommand:vscode-masa-blazor-preview.renderDocument"
+    "onCommand:vscode-masa-blazor-preview.renderDocument",
+    "onCommand:vscode-masa-blazor-preview.renderFragment"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "vscode-masa-blazor-preview.renderDocument",
-        "title": "Preview Razor File"
+        "title": "预览Razor文件"
+      },
+      {
+        "command": "vscode-masa-blazor-preview.renderFragment",
+        "title": "预览Razor片段"
       }
     ],
     "menus": {
@@ -26,6 +34,13 @@
           "when": "resourceFilename =~ /.razor|.cshtml/",
           "command": "vscode-masa-blazor-preview.renderDocument",
           "group": "preview"
+        }
+      ],
+      "editor/context": [
+        {
+          "when" : " editorHasSelection && resourceFilename =~ /.razor|.cshtml/",
+          "command": "vscode-masa-blazor-preview.renderFragment",
+          "group": "preivew"
         }
       ]
     }
@@ -36,7 +51,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package --no-yarn"
   },
   "devDependencies": {
     "@types/glob": "^8.0.1",
@@ -49,12 +65,9 @@
     "eslint": "^8.33.0",
     "glob": "^8.1.0",
     "mocha": "^10.1.0",
-    "process": "^0.11.10",
-    "tslib": "^2.5.0",
-    "typescript": "^4.9.4",
-    "util": "^0.12.5"
+    "typescript": "^4.9.4"
   },
   "dependencies": {
-    "axios": "^1.3.0"
+    "axios": "^1.3.1"
   }
 }

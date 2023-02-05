@@ -1,7 +1,16 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { ILogger, Logger } from './logging';
 import { RazorPreviewView } from './preview-view';
+import { ApiService } from './service';
+import { SessionManager } from './session';
+import { SessionManagerV2 } from './session-v2';
+import { defaultSetting } from './setting';
+
+let logger: ILogger;
+let sessionManager: SessionManager;
+let sessionManagerV2: SessionManagerV2;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -11,37 +20,57 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-masa-blazor-preview" is now active!');
 
-	const view = new RazorPreviewView(context);
+	logger = new Logger();
 
-	/**
-	 * open
-	 */
-	function openPreviewToTheSide(uri?: vscode.Uri) {
-		let resource = uri;
-		if (!(resource instanceof vscode.Uri)) {
-			if (vscode.window.activeTextEditor) {
-				// we are relaxed and don't check for markdown files
-				resource = vscode.window.activeTextEditor.document.uri;
-			}
-		}
-		view.init(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: vscode.ViewColumn.Two,
-			preserveFocus: true,
-		});
-	}
+	const externalApi = new ApiService({
+		baseUrl: defaultSetting.startupUrl
+	})
+
+	// sessionManager = new SessionManager(context, logger);
+	sessionManagerV2 = new SessionManagerV2(context, logger, externalApi)
+
+	const view = new RazorPreviewView(context, externalApi, sessionManagerV2, logger);
+	
+	sessionManagerV2.start();
 
 	function openPreview(uri?: vscode.Uri) {
 		let resource = uri;
+		let viewColumn = vscode.ViewColumn.Two;
+
 		if (!(resource instanceof vscode.Uri)) {
 			if (vscode.window.activeTextEditor) {
-				// we are relaxed and don't check for markdown files
 				resource = vscode.window.activeTextEditor.document.uri;
 			}
 		}
-		view.init(resource!, vscode.window.activeTextEditor!, {
-			viewColumn: vscode.ViewColumn.One,
-			preserveFocus: false,
-		});
+
+		view.init(
+			resource!, 
+			vscode.window.activeTextEditor!, 
+			{
+				viewColumn: viewColumn,
+				preserveFocus: true,
+			}
+		);
+	}
+
+	function openPreviewFragment(uri?: vscode.Uri) {
+		let resource = uri;
+		let viewColumn = vscode.ViewColumn.Two;
+
+		if (!(resource instanceof vscode.Uri)) {
+			if (vscode.window.activeTextEditor) {
+				resource = vscode.window.activeTextEditor.document.uri;
+			}
+		}
+
+		view.initSelection(
+			resource!, 
+			vscode.window.activeTextEditor!, 
+			{
+				viewColumn: viewColumn,
+				preserveFocus: true
+			}
+		);
 	}
 
 	// The command has been defined in the package.json file
@@ -52,7 +81,13 @@ export function activate(context: vscode.ExtensionContext) {
 		openPreview
 	);
 
+	let command = vscode.commands.registerCommand(
+		"vscode-masa-blazor-preview.renderFragment",
+		openPreviewFragment
+	);
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(command);
 }
 
 // This method is called when your extension is deactivated

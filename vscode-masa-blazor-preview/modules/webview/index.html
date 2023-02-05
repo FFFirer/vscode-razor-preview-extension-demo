@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' ; script-src 'self' 'unsafe-inline' ; frame-src 'unsafe-inline' @@baseUrl ; "> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+    <style>
+        body {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <iframe id="preview" src="@@baseUrl" frameborder="0" style="width: 100%; height: 100vh;"></iframe>
+    </div>
+    <script type="text/javascript">
+        const vscode = acquireVsCodeApi();
+
+        window.addEventListener('message', (event) => {
+            const message = event.data;
+            console.log("received", message);
+            handleMessage(message);
+        })
+
+        function handleMessage(message){
+            debugger
+            if(message.target){
+                handleTarget(message.target, message.data);
+            }
+            else if(message.event){
+                webViewLoaded();
+            }
+        }
+
+        function handleTarget(target, data){
+
+        }
+
+        const webViewLoaded = function(){
+            vscode.postMessage({
+                "event": "loaded"
+            })
+        }
+
+        // document.getElementById("preview").addEventListener("load", function(){
+        //     webViewLoaded()
+        // })
+        
+    </script>
+</body>
+
+</html>
