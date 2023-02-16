@@ -26,12 +26,20 @@ export function activate(context: vscode.ExtensionContext) {
 		baseUrl: defaultSetting.startupUrl
 	})
 
+	logger.write("external api service inited");
+
 	// sessionManager = new SessionManager(context, logger);
 	sessionManagerV2 = new SessionManagerV2(context, logger, externalApi)
 
+	logger.write("session manager inited");
+
 	const view = new RazorPreviewView(context, externalApi, sessionManagerV2, logger);
 	
+	logger.write("view manager inited");
+
 	sessionManagerV2.start();
+
+	logger.write("session manager started");
 
 	function openPreview(uri?: vscode.Uri) {
 		let resource = uri;
@@ -76,18 +84,21 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand(
-		'vscode-masa-blazor-preview.renderDocument',
+	let previewDocumentCommand = vscode.commands.registerCommand(
+		'vscode-masa-blazor-preview.previewDocument',
 		openPreview
 	);
 
-	let command = vscode.commands.registerCommand(
-		"vscode-masa-blazor-preview.renderFragment",
+	let previewFragmentCommand = vscode.commands.registerCommand(
+		"vscode-masa-blazor-preview.previewFragment",
 		openPreviewFragment
 	);
 
-	context.subscriptions.push(disposable);
-	context.subscriptions.push(command);
+	context.subscriptions.push(previewDocumentCommand);
+	context.subscriptions.push(previewFragmentCommand);
+
+	logger.write("commands added");
+	vscode.window.showInformationMessage("vscode-masa-blazor-preview actived");
 }
 
 // This method is called when your extension is deactivated

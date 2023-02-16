@@ -50,13 +50,6 @@ export class ExternalApiClient {
         let url = "/api/event/renderfile";
         let request = new RenderFileRequest(path);
 
-        let option: RequestInit = {
-            method: "POST",
-            headers: {
-
-            }
-        }
-
         return await axios.post(url, request)
     }
 
